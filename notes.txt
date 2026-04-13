@@ -1,0 +1,9 @@
+npm install react-icons
+
+npm install dotenv (process.env.MONGO_URL only works if dotenv is loaded.
+Right now it was undefined, so Mongoose crashed.)
+
+
+
+MONGO_URL=mongodb+srv://trishakamalshetty_db_user:tina123@cluster0.fjbgmv7.mongodb.net/?appName=Cluster0
+PORT=5000

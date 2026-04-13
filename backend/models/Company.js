@@ -5,16 +5,13 @@ const companySchema = new mongoose.Schema({
     type: String,
     required: true
   },
-
-  location: String,
-
-  packageOffered: Number,
-
-  driveDate: Date,
-
-  eligibilityCriteria: {
-    minCgpa: Number,
-    branches: [String]
+  minCgpa: {
+    type: Number,
+    required: true
+  },
+  packageOffered: {
+    type: String,
+    required: true
   }
 });
 

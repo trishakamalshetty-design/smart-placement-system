@@ -1,36 +1,51 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 
-// PORT
-const PORT = process.env.PORT || 5000;
-
-// Middleware
+/* ---------------- MIDDLEWARE ---------------- */
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type"]
 }));
 
 app.use(express.json());
 
-// Routes
-app.use('/api/students', require('./routes/studentRoutes'));
-app.use('/api/companies', require('./routes/companyRoutes'));
-app.use('/api/placements', require('./routes/placementRoutes'));
-app.use('/api/reports', require('./routes/reportRoutes'));
+/* ---------------- ROUTES ---------------- */
+const studentRoutes = require("./routes/studentRoutes");
+const companyRoutes = require("./routes/companyRoutes");
+const placementRoutes = require("./routes/placementRoutes");
+const reportRoutes = require("./routes/reportRoutes");
 
-// MongoDB Connection + Server Start (ONLY ONCE)
-mongoose.connect(process.env.MONGO_URL)
+/* Safety check (prevents your exact error) */
+if (!studentRoutes || !companyRoutes || !placementRoutes || !reportRoutes) {
+  console.log("❌ One or more routes are undefined. Check exports in route files.");
+}
+
+app.use("/api/students", studentRoutes);
+app.use("/api/companies", companyRoutes);
+app.use("/api/placements", placementRoutes);
+app.use("/api/reports", reportRoutes);
+
+/* ---------------- DEFAULT ROUTE ---------------- */
+app.get("/", (req, res) => {
+  res.send("Smart Placement System API Running 🚀");
+});
+
+/* ---------------- MONGO CONNECTION ---------------- */
+const PORT = process.env.PORT || 5000;
+const MONGO_URL = process.env.MONGO_URL;
+
+mongoose.connect(MONGO_URL)
   .then(() => {
     console.log("MongoDB Connected");
 
     app.listen(PORT, () => {
       console.log("Server running on port", PORT);
     });
-
   })
   .catch((err) => {
     console.log("MongoDB Connection Error:", err);

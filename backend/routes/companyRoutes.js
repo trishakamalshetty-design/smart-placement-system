@@ -1,22 +1,33 @@
 const express = require("express");
-const router = express.Router();
 const Company = require("../models/Company");
 
-// ADD COMPANY
+const router = express.Router();
+
 router.post("/", async (req, res) => {
   try {
-    const company = new Company(req.body);
-    await company.save();
-    res.json(company);
+    const company = await Company.create(req.body);
+    res.status(201).json(company);
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// GET ALL COMPANIES
 router.get("/", async (req, res) => {
-  const companies = await Company.find();
-  res.json(companies);
+  try {
+    const companies = await Company.find();
+    res.json(companies);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  try {
+    await Company.findByIdAndDelete(req.params.id);
+    res.json({ message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;
