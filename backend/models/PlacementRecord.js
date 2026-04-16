@@ -15,7 +15,7 @@ const placementRecordSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["pending", "selected", "rejected"],
+    enum: ["pending", "placed", "rejected"],
     default: "pending"
   },
 
