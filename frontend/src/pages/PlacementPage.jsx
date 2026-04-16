@@ -12,7 +12,7 @@ export default function PlacementPage() {
     studentId: "",
     companyId: "",
     packageOffered: "",
-    status: "selected"
+    status: "placed"
   });
 
   useEffect(() => {
@@ -39,16 +39,19 @@ export default function PlacementPage() {
       return;
     }
 
-    await axios.post(`${API}/api/placements`, {
-      ...form,
-      packageOffered: Number(form.packageOffered)
-    });
+await axios.post(`${API}/api/placements`, {
+  studentId: form.studentId,
+  companyId: form.companyId,
+  status: form.status
+});
+    
+	
 
     setForm({
       studentId: "",
       companyId: "",
       packageOffered: "",
-      status: "selected"
+      status: "placed"
     });
 
     loadData();
@@ -103,7 +106,7 @@ export default function PlacementPage() {
           value={form.status}
           onChange={handleChange}
         >
-          <option value="selected">Selected</option>
+          <option value="placed">Selected</option>
           <option value="rejected">Rejected</option>
         </select>
 
@@ -130,7 +133,7 @@ export default function PlacementPage() {
               <tr key={p._id}>
                 <td>{p.studentId?.name}</td>
                 <td>{p.companyId?.name}</td>
-                <td>{p.packageOffered} LPA</td>
+               <td>{p.companyId?.packageOffered} LPA</td>
                 <td>{p.status}</td>
               </tr>
             ))
