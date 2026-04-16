@@ -22,10 +22,12 @@ export default function CompaniesPage() {
 
   const handleAdd = async () => {
     await axios.post(`${API}/api/companies`, {
-      name: form.name,
-      minCGPA: Number(form.minCGPA),
-      packageOffered: Number(form.packageOffered),
-    });
+  name: form.name,
+  minCgpa: Number(form.minCGPA),      // 👈 small g
+  packageOffered: form.packageOffered // 👈 remove Number()
+});
+	
+	
     setForm({ name: "", minCGPA: "", packageOffered: "" });
     fetchCompanies();
   };

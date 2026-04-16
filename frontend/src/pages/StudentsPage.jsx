@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 const API = "https://smart-placement-system-s4ps.onrender.com/api/students";
+//const API = "http://localhost:5000/api/students";
 
 export default function StudentsPage() {
   const [students, setStudents] = useState([]);
@@ -13,7 +14,7 @@ export default function StudentsPage() {
     year: "",
     email: "",
     phone: "",
-    placementStatus: "pending"
+    placementStatus: "pending",
   });
 
   useEffect(() => {
@@ -26,11 +27,23 @@ export default function StudentsPage() {
   };
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const { name, value } = e.target;
+
+  setForm((prev) => ({
+    ...prev,
+    [name]:
+      name === "cgpa" || name === "year"
+        ? value === "" ? "" : Number(value)
+        : value,
+  }));
+};
 
   const addStudent = async () => {
+  try {
     await axios.post(API, form);
+
+    await fetchStudents();  // ✅ important
+
     setForm({
       name: "",
       branch: "",
@@ -38,21 +51,23 @@ export default function StudentsPage() {
       year: "",
       email: "",
       phone: "",
-      placementStatus: "pending"
+      placementStatus: "pending",
     });
-    fetchStudents();
-  };
+  } catch (err) {
+    console.log(err);
+  }
+};
 
   const deleteStudent = async (id) => {
     await axios.delete(`${API}/${id}`);
-    fetchStudents();
+    setStudents(students.filter((s) => s._id !== id));
   };
 
   return (
     <div>
       <h2>🎓 Students</h2>
 
-      {/* ADD FORM */}
+      {/* FORM */}
       <div style={box}>
         <input name="name" placeholder="Name" value={form.name} onChange={handleChange} />
         <input name="branch" placeholder="Branch" value={form.branch} onChange={handleChange} />
@@ -61,12 +76,7 @@ export default function StudentsPage() {
         <input name="email" placeholder="Email" value={form.email} onChange={handleChange} />
         <input name="phone" placeholder="Phone" value={form.phone} onChange={handleChange} />
 
-        {/* ⭐ STATUS OPTION WHILE ADDING */}
-        <select
-          name="placementStatus"
-          value={form.placementStatus}
-          onChange={handleChange}
-        >
+        <select name="placementStatus" value={form.placementStatus} onChange={handleChange}>
           <option value="pending">pending</option>
           <option value="placed">placed</option>
           <option value="rejected">rejected</option>
@@ -76,7 +86,7 @@ export default function StudentsPage() {
       </div>
 
       {/* TABLE */}
-      <table>
+      <table border="1" cellPadding="10" style={{ marginTop: "20px", width: "100%" }}>
         <thead>
           <tr>
             <th>Name</th>
@@ -115,5 +125,5 @@ const box = {
   display: "flex",
   gap: "10px",
   marginBottom: "15px",
-  flexWrap: "wrap"
+  flexWrap: "wrap",
 };
