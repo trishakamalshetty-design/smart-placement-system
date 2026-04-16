@@ -9,7 +9,7 @@ const studentSchema = new mongoose.Schema({
   phone: { type: String, required: true },
   placementStatus: {
     type: String,
-    enum: ["pending", "selected", "rejected"],
+    enum: ["pending", "placed", "rejected"],
     default: "pending"
   }
 });

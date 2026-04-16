@@ -1,29 +1,21 @@
-const router = require("express").Router();
+const express = require("express");
 const Placement = require("../models/PlacementRecord");
+
+const router = express.Router();
 
 // ➕ CREATE placement
 router.post("/", async (req, res) => {
   try {
-    const { studentId, companyId, status } = req.body;
+    console.log("BODY RECEIVED:", req.body); // 👈 add this
 
-    if (!studentId || !companyId) {
-      return res.status(400).json({ error: "studentId and companyId required" });
-    }
-
-    const placement = await Placement.create({
-      studentId,
-      companyId,
-      status: status || "pending"
-    });
-
-    res.status(201).json(placement);
+    const p = await Placement.create(req.body);
+    res.status(201).json(p);
   } catch (err) {
+    console.error(err); // 👈 add this
     res.status(500).json({ error: err.message });
   }
 });
-
-
-// 📄 GET all placements (with student + company details)
+// 📄 GET all placements
 router.get("/", async (req, res) => {
   try {
     const data = await Placement.find()
@@ -36,15 +28,12 @@ router.get("/", async (req, res) => {
   }
 });
 
-
-// ✏️ UPDATE status (selected / rejected / pending)
+// ✏️ UPDATE status
 router.put("/:id", async (req, res) => {
   try {
-    const { status } = req.body;
-
     const updated = await Placement.findByIdAndUpdate(
       req.params.id,
-      { status },
+      { status: req.body.status },
       { new: true }
     );
 
@@ -53,7 +42,6 @@ router.put("/:id", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // ❌ DELETE placement
 router.delete("/:id", async (req, res) => {
