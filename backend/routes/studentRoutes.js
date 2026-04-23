@@ -1,13 +1,10 @@
 const express = require("express");
 const Student = require("../models/Student");
 
-const auth = require("../middleware/authMiddleware");
-const allowAdmin = require("../middleware/allowAdmin");
-
 const router = express.Router();
 
-// ➕ ADD student — ADMIN ONLY
-router.post("/", auth, allowAdmin, async (req, res) => {
+// ➕ ADD student
+router.post("/", async (req, res) => {
   try {
     const student = await Student.create(req.body);
     res.status(201).json(student);
@@ -16,7 +13,7 @@ router.post("/", auth, allowAdmin, async (req, res) => {
   }
 });
 
-// 📄 GET all students — ADMIN + VIEWER
+// 📄 GET all students
 router.get("/", async (req, res) => {
   try {
     const data = await Student.find();
@@ -26,8 +23,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-// ❌ DELETE student — ADMIN ONLY
-router.delete("/:id", auth, allowAdmin, async (req, res) => {
+// ❌ DELETE student
+router.delete("/:id", async (req, res) => {
   try {
     await Student.findByIdAndDelete(req.params.id);
     res.json({ message: "Deleted" });
