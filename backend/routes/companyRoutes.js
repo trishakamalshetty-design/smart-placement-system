@@ -17,7 +17,7 @@ router.post("/", auth, allowAdmin, async (req, res) => {
 });
 
 // 📄 GET all companies — ADMIN + VIEWER
-router.get("/", auth, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const companies = await Company.find();
     res.json(companies);

@@ -17,7 +17,7 @@ router.post("/", auth, allowAdmin, async (req, res) => {
 });
 
 // 📄 GET all placements — ADMIN + VIEWER
-router.get("/", auth, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const data = await Placement.find()
       .populate("studentId")
