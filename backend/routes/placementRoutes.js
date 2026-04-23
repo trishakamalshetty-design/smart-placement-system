@@ -1,22 +1,23 @@
 const express = require("express");
 const Placement = require("../models/PlacementRecord");
 
+const auth = require("../middleware/authMiddleware");
+const allowAdmin = require("../middleware/allowAdmin");
+
 const router = express.Router();
 
-// ➕ CREATE placement
-router.post("/", async (req, res) => {
+// ➕ CREATE placement — ADMIN ONLY
+router.post("/", auth, allowAdmin, async (req, res) => {
   try {
-    console.log("BODY RECEIVED:", req.body); // 👈 add this
-
     const p = await Placement.create(req.body);
     res.status(201).json(p);
   } catch (err) {
-    console.error(err); // 👈 add this
     res.status(500).json({ error: err.message });
   }
 });
-// 📄 GET all placements
-router.get("/", async (req, res) => {
+
+// 📄 GET all placements — ADMIN + VIEWER
+router.get("/", auth, async (req, res) => {
   try {
     const data = await Placement.find()
       .populate("studentId")
@@ -28,8 +29,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-// ✏️ UPDATE status
-router.put("/:id", async (req, res) => {
+// ✏️ UPDATE status — ADMIN ONLY
+router.put("/:id", auth, allowAdmin, async (req, res) => {
   try {
     const updated = await Placement.findByIdAndUpdate(
       req.params.id,
@@ -43,8 +44,8 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// ❌ DELETE placement
-router.delete("/:id", async (req, res) => {
+// ❌ DELETE placement — ADMIN ONLY
+router.delete("/:id", auth, allowAdmin, async (req, res) => {
   try {
     await Placement.findByIdAndDelete(req.params.id);
     res.json({ message: "Placement deleted successfully" });

@@ -29,6 +29,10 @@ app.use("/api/students", studentRoutes);
 app.use("/api/companies", companyRoutes);
 app.use("/api/placements", placementRoutes);
 app.use("/api/reports", reportRoutes);
+const authRoutes = require("./routes/authRoutes");
+console.log("AUTH ROUTES LOADED:", typeof authRoutes);
+
+app.use("/api/auth", authRoutes);
 
 /* ---------------- DEFAULT ROUTE ---------------- */
 app.get("/", (req, res) => {

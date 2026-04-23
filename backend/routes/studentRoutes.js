@@ -1,8 +1,13 @@
-const router = require("express").Router();
+const express = require("express");
 const Student = require("../models/Student");
 
-// ADD student (now accepts placementStatus)
-router.post("/", async (req, res) => {
+const auth = require("../middleware/authMiddleware");
+const allowAdmin = require("../middleware/allowAdmin");
+
+const router = express.Router();
+
+// ➕ ADD student — ADMIN ONLY
+router.post("/", auth, allowAdmin, async (req, res) => {
   try {
     const student = await Student.create(req.body);
     res.status(201).json(student);
@@ -11,16 +16,24 @@ router.post("/", async (req, res) => {
   }
 });
 
-// GET all
-router.get("/", async (req, res) => {
-  const data = await Student.find();
-  res.json(data);
+// 📄 GET all students — ADMIN + VIEWER
+router.get("/", auth, async (req, res) => {
+  try {
+    const data = await Student.find();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// DELETE
-router.delete("/:id", async (req, res) => {
-  await Student.findByIdAndDelete(req.params.id);
-  res.json({ message: "Deleted" });
+// ❌ DELETE student — ADMIN ONLY
+router.delete("/:id", auth, allowAdmin, async (req, res) => {
+  try {
+    await Student.findByIdAndDelete(req.params.id);
+    res.json({ message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

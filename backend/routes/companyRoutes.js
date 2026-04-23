@@ -1,9 +1,13 @@
 const express = require("express");
-const Company = require("../models/Company.js");
+const Company = require("../models/Company");
+
+const auth = require("../middleware/authMiddleware");
+const allowAdmin = require("../middleware/allowAdmin");
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+// ➕ ADD company — ADMIN ONLY
+router.post("/", auth, allowAdmin, async (req, res) => {
   try {
     const company = await Company.create(req.body);
     res.status(201).json(company);
@@ -12,7 +16,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+// 📄 GET all companies — ADMIN + VIEWER
+router.get("/", auth, async (req, res) => {
   try {
     const companies = await Company.find();
     res.json(companies);
@@ -21,7 +26,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+// ❌ DELETE company — ADMIN ONLY
+router.delete("/:id", auth, allowAdmin, async (req, res) => {
   try {
     await Company.findByIdAndDelete(req.params.id);
     res.json({ message: "Deleted" });
