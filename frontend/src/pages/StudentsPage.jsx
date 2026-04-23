@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-
-const API = "https://smart-placement-system-s4ps.onrender.com/api/students";
-//const API = "http://localhost:5000/api/students";
+import API from "../api";
 
 export default function StudentsPage() {
   const [students, setStudents] = useState([]);
@@ -22,71 +19,63 @@ export default function StudentsPage() {
   }, []);
 
   const fetchStudents = async () => {
-    const res = await axios.get(API);
-    setStudents(res.data);
+    try {
+      const res = await API.get("/students");
+      setStudents(res.data);
+    } catch (err) {
+      console.error(err);
+      alert("Error loading students (check login or backend)");
+    }
   };
 
   const handleChange = (e) => {
-  const { name, value } = e.target;
-
-  setForm((prev) => ({
-    ...prev,
-    [name]:
-      name === "cgpa" || name === "year"
-        ? value === "" ? "" : Number(value)
-        : value,
-  }));
-};
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const addStudent = async () => {
-  try {
-    await axios.post(API, form);
+    try {
+      await API.post("/students", form);
+      fetchStudents();
 
-    await fetchStudents();  // ✅ important
-
-    setForm({
-      name: "",
-      branch: "",
-      cgpa: "",
-      year: "",
-      email: "",
-      phone: "",
-      placementStatus: "pending",
-    });
-  } catch (err) {
-    console.log(err);
-  }
-};
+      setForm({
+        name: "",
+        branch: "",
+        cgpa: "",
+        year: "",
+        email: "",
+        phone: "",
+        placementStatus: "pending",
+      });
+    } catch (err) {
+      alert("Only admin can add students OR not logged in");
+    }
+  };
 
   const deleteStudent = async (id) => {
-    await axios.delete(`${API}/${id}`);
-    setStudents(students.filter((s) => s._id !== id));
+    try {
+      await API.delete(`/students/${id}`);
+      setStudents(students.filter((s) => s._id !== id));
+    } catch (err) {
+      alert("Delete failed (admin only or auth issue)");
+    }
   };
 
   return (
     <div>
       <h2>🎓 Students</h2>
 
-      {/* FORM */}
       <div style={box}>
-        <input name="name" placeholder="Name" value={form.name} onChange={handleChange} />
-        <input name="branch" placeholder="Branch" value={form.branch} onChange={handleChange} />
-        <input name="cgpa" placeholder="CGPA" value={form.cgpa} onChange={handleChange} />
-        <input name="year" placeholder="Year" value={form.year} onChange={handleChange} />
-        <input name="email" placeholder="Email" value={form.email} onChange={handleChange} />
-        <input name="phone" placeholder="Phone" value={form.phone} onChange={handleChange} />
+        <input name="name" placeholder="Name" onChange={handleChange} value={form.name} />
+        <input name="branch" placeholder="Branch" onChange={handleChange} value={form.branch} />
+        <input name="cgpa" placeholder="CGPA" onChange={handleChange} value={form.cgpa} />
+        <input name="year" placeholder="Year" onChange={handleChange} value={form.year} />
+        <input name="email" placeholder="Email" onChange={handleChange} value={form.email} />
+        <input name="phone" placeholder="Phone" onChange={handleChange} value={form.phone} />
 
-        <select name="placementStatus" value={form.placementStatus} onChange={handleChange}>
-          <option value="pending">pending</option>
-          <option value="placed">placed</option>
-          <option value="rejected">rejected</option>
-        </select>
-
-        <button onClick={addStudent}>Add Student</button>
+        <button onClick={addStudent}>Add</button>
       </div>
 
-      {/* TABLE */}
-      <table border="1" cellPadding="10" style={{ marginTop: "20px", width: "100%" }}>
+      <table border="1" width="100%">
         <thead>
           <tr>
             <th>Name</th>
@@ -121,9 +110,4 @@ export default function StudentsPage() {
   );
 }
 
-const box = {
-  display: "flex",
-  gap: "10px",
-  marginBottom: "15px",
-  flexWrap: "wrap",
-};
+const box = { display: "flex", gap: "10px", flexWrap: "wrap" };

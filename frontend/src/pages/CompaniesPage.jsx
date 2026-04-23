@@ -1,80 +1,82 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-
-const API = "https://smart-placement-system-s4ps.onrender.com";
+import API from "../api";
 
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState([]);
+
   const [form, setForm] = useState({
     name: "",
-    minCGPA: "",
-    packageOffered: ""
+    location: "",
+    packageOffered: "",
   });
-
-  const fetchCompanies = async () => {
-    const res = await axios.get(`${API}/api/companies`);
-    setCompanies(res.data);
-  };
 
   useEffect(() => {
     fetchCompanies();
   }, []);
 
-  const handleAdd = async () => {
-    await axios.post(`${API}/api/companies`, {
-  name: form.name,
-  minCgpa: Number(form.minCGPA),      // 👈 small g
-  packageOffered: form.packageOffered // 👈 remove Number()
-});
-	
-	
-    setForm({ name: "", minCGPA: "", packageOffered: "" });
-    fetchCompanies();
+  const fetchCompanies = async () => {
+    try {
+      const res = await API.get("/companies");
+      setCompanies(res.data);
+    } catch (err) {
+      alert("Error loading companies");
+    }
   };
 
-  const handleDelete = async (id) => {
-    await axios.delete(`${API}/api/companies/${id}`);
-    fetchCompanies();
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const addCompany = async () => {
+    try {
+      await API.post("/companies", form);
+      fetchCompanies();
+
+      setForm({ name: "", location: "", packageOffered: "" });
+    } catch (err) {
+      alert("Only admin can add company");
+    }
+  };
+
+  const deleteCompany = async (id) => {
+    try {
+      await API.delete(`/companies/${id}`);
+      setCompanies(companies.filter((c) => c._id !== id));
+    } catch (err) {
+      alert("Delete failed (admin only)");
+    }
   };
 
   return (
     <div>
       <h2>🏢 Companies</h2>
 
-      <input
-        placeholder="Company Name"
-        value={form.name}
-        onChange={(e) => setForm({ ...form, name: e.target.value })}
-      />
-      <input
-        placeholder="Minimum CGPA"
-        value={form.minCGPA}
-        onChange={(e) => setForm({ ...form, minCGPA: e.target.value })}
-      />
-      <input
-        placeholder="Package Offered (number)"
-        value={form.packageOffered}
-        onChange={(e) => setForm({ ...form, packageOffered: e.target.value })}
-      />
-      <button onClick={handleAdd}>Add Company</button>
+      <div style={box}>
+        <input name="name" placeholder="Name" onChange={handleChange} value={form.name} />
+        <input name="location" placeholder="Location" onChange={handleChange} value={form.location} />
+        <input name="packageOffered" placeholder="Package" onChange={handleChange} value={form.packageOffered} />
 
-      <table border="1" cellPadding="10" style={{ marginTop: "20px" }}>
+        <button onClick={addCompany}>Add</button>
+      </div>
+
+      <table border="1" width="100%">
         <thead>
           <tr>
             <th>Name</th>
-            <th>Package (LPA)</th>
+            <th>Location</th>
+            <th>Package</th>
             <th>Action</th>
           </tr>
         </thead>
+
         <tbody>
-          {companies.map((company) => (
-            <tr key={company._id}>
-              <td>{company.name}</td>
-              <td>{company.packageOffered}</td>
+          {companies.map((c) => (
+            <tr key={c._id}>
+              <td>{c.name}</td>
+              <td>{c.location}</td>
+              <td>{c.packageOffered}</td>
               <td>
-                <button onClick={() => handleDelete(company._id)}>
-                  Delete
-                </button>
+                <button onClick={() => deleteCompany(c._id)}>Delete</button>
               </td>
             </tr>
           ))}
@@ -83,3 +85,5 @@ export default function CompaniesPage() {
     </div>
   );
 }
+
+const box = { display: "flex", gap: "10px", flexWrap: "wrap" };

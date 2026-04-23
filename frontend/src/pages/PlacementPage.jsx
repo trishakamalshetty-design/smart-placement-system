@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-
-const API = "https://smart-placement-system-s4ps.onrender.com";
+import API from "../api";
 
 export default function PlacementPage() {
   const [students, setStudents] = useState([]);
@@ -12,7 +10,7 @@ export default function PlacementPage() {
     studentId: "",
     companyId: "",
     packageOffered: "",
-    status: "placed"
+    status: "selected",
   });
 
   useEffect(() => {
@@ -20,9 +18,9 @@ export default function PlacementPage() {
   }, []);
 
   const loadData = async () => {
-    const s = await axios.get(`${API}/api/students`);
-    const c = await axios.get(`${API}/api/companies`);
-    const p = await axios.get(`${API}/api/placements`);
+    const s = await API.get("/students");
+    const c = await API.get("/companies");
+    const p = await API.get("/placements");
 
     setStudents(s.data);
     setCompanies(c.data);
@@ -34,41 +32,35 @@ export default function PlacementPage() {
   };
 
   const addPlacement = async () => {
-    if (!form.studentId || !form.companyId || !form.packageOffered) {
-      alert("Fill all fields");
-      return;
+    try {
+      await API.post("/placements", form);
+      loadData();
+      setForm({
+        studentId: "",
+        companyId: "",
+        packageOffered: "",
+        status: "selected",
+      });
+    } catch (err) {
+      alert("Only admin can add placement");
     }
+  };
 
-await axios.post(`${API}/api/placements`, {
-  studentId: form.studentId,
-  companyId: form.companyId,
-  status: form.status
-});
-    
-	
-
-    setForm({
-      studentId: "",
-      companyId: "",
-      packageOffered: "",
-      status: "placed"
-    });
-
-    loadData();
+  const deletePlacement = async (id) => {
+    try {
+      await API.delete(`/placements/${id}`);
+      setPlacements((prev) => prev.filter((p) => p._id !== id));
+    } catch (err) {
+      alert("Only admin can delete");
+    }
   };
 
   return (
     <div>
-      <h2>🎯 Placement System</h2>
+      <h2>🎯 Placements</h2>
 
-      {/* FORM */}
-      <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
-        {/* STUDENT */}
-        <select
-          name="studentId"
-          value={form.studentId}
-          onChange={handleChange}
-        >
+      <div style={box}>
+        <select name="studentId" value={form.studentId} onChange={handleChange}>
           <option value="">Select Student</option>
           {students.map((s) => (
             <option key={s._id} value={s._id}>
@@ -77,12 +69,7 @@ await axios.post(`${API}/api/placements`, {
           ))}
         </select>
 
-        {/* COMPANY */}
-        <select
-          name="companyId"
-          value={form.companyId}
-          onChange={handleChange}
-        >
+        <select name="companyId" value={form.companyId} onChange={handleChange}>
           <option value="">Select Company</option>
           {companies.map((c) => (
             <option key={c._id} value={c._id}>
@@ -91,7 +78,6 @@ await axios.post(`${API}/api/placements`, {
           ))}
         </select>
 
-        {/* PACKAGE */}
         <input
           type="number"
           name="packageOffered"
@@ -100,46 +86,45 @@ await axios.post(`${API}/api/placements`, {
           onChange={handleChange}
         />
 
-        {/* STATUS */}
-        <select
-          name="status"
-          value={form.status}
-          onChange={handleChange}
-        >
-          <option value="placed">Selected</option>
+        <select name="status" value={form.status} onChange={handleChange}>
+          <option value="selected">Selected</option>
           <option value="rejected">Rejected</option>
         </select>
 
         <button onClick={addPlacement}>Add Placement</button>
       </div>
 
-      {/* TABLE */}
-      <table border="1" cellPadding="10">
+      <table border="1" cellPadding="10" style={{ width: "100%" }}>
         <thead>
           <tr>
             <th>Student</th>
             <th>Company</th>
             <th>Package</th>
             <th>Status</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {placements.length === 0 ? (
-            <tr>
-              <td colSpan="4">No placements found</td>
+          {placements.map((p) => (
+            <tr key={p._id}>
+              <td>{p.studentId?.name}</td>
+              <td>{p.companyId?.name}</td>
+              <td>{p.packageOffered} LPA</td>
+              <td>{p.status}</td>
+              <td>
+                <button onClick={() => deletePlacement(p._id)}>Delete</button>
+              </td>
             </tr>
-          ) : (
-            placements.map((p) => (
-              <tr key={p._id}>
-                <td>{p.studentId?.name}</td>
-                <td>{p.companyId?.name}</td>
-               <td>{p.companyId?.packageOffered} LPA</td>
-                <td>{p.status}</td>
-              </tr>
-            ))
-          )}
+          ))}
         </tbody>
       </table>
     </div>
   );
 }
+
+const box = {
+  display: "flex",
+  gap: "10px",
+  marginBottom: "15px",
+  flexWrap: "wrap",
+};
