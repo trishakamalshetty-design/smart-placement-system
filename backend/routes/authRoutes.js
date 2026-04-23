@@ -11,13 +11,13 @@ router.get("/test", (req, res) => {
   res.send("Auth routes working");
 });
 
-/* REGISTER ROUTE */
+/* REGISTER */
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ msg: "All fields required" });
+    if (!email || !password) {
+      return res.status(400).json({ msg: "Email & password required" });
     }
 
     const existingUser = await User.findOne({ email });
@@ -27,24 +27,24 @@ router.post("/register", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = new User({
+    const user = new User({
       name,
       email,
       password: hashedPassword,
       role: role || "student",
     });
 
-    await newUser.save();
+    await user.save();
 
     res.json({ msg: "User created successfully" });
 
   } catch (err) {
-    console.error(err);
+    console.error("REGISTER ERROR:", err);
     res.status(500).json({ msg: "Server error" });
   }
 });
 
-/* LOGIN ROUTE */
+/* LOGIN */
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -56,18 +56,15 @@ router.post("/login", async (req, res) => {
     if (!isMatch) return res.status(400).json({ msg: "Invalid password" });
 
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      { id: user._id },
       process.env.JWT_SECRET || "secretkey",
       { expiresIn: "1d" }
     );
 
-    res.json({
-      token,
-      role: user.role,
-    });
+    res.json({ token, role: user.role });
 
   } catch (err) {
-    console.error(err);
+    console.error("LOGIN ERROR:", err);
     res.status(500).json({ msg: "Server error" });
   }
 });

@@ -9,7 +9,7 @@ const app = express();
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type"]
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json());
@@ -19,18 +19,17 @@ const studentRoutes = require("./routes/studentRoutes");
 const companyRoutes = require("./routes/companyRoutes");
 const placementRoutes = require("./routes/placementRoutes");
 const reportRoutes = require("./routes/reportRoutes");
+const authRoutes = require("./routes/authRoutes");
 
-/* Safety check (prevents your exact error) */
-if (!studentRoutes || !companyRoutes || !placementRoutes || !reportRoutes) {
-  console.log("❌ One or more routes are undefined. Check exports in route files.");
+/* Safety check */
+if (!studentRoutes || !companyRoutes || !placementRoutes || !reportRoutes || !authRoutes) {
+  console.log("❌ One or more routes are undefined. Check route exports.");
 }
 
 app.use("/api/students", studentRoutes);
 app.use("/api/companies", companyRoutes);
 app.use("/api/placements", placementRoutes);
 app.use("/api/reports", reportRoutes);
-
-const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes);
 
 /* ---------------- DEFAULT ROUTE ---------------- */
@@ -47,7 +46,7 @@ mongoose.connect(MONGO_URL)
     console.log("MongoDB Connected");
 
     app.listen(PORT, () => {
-      console.log("Server running on port", PORT);
+      console.log(`Server running on port ${PORT}`);
     });
   })
   .catch((err) => {
